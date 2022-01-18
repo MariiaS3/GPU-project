@@ -17,19 +17,18 @@ void Widget::initializeGL() {
     mouse =0;
     lightPosition = {10, 5, 0};
 
+    fbOutputTexture = new Texture();
+    fbDepthTexture = new Texture();
+
+    fbOutputMesh = Mesh::createPlane({1,1});
+
+    emitter = new SimpleEmitter();
+
     framebuffer1 = new Framebuffer();
     framebuffer2 = new Framebuffer();
     framebuffer3 = new Framebuffer();
     framebuffer4 = new Framebuffer();
     framebuffer5 = new Framebuffer();
-
-    fbOutputTexture = new Texture();
-
-    fbDepthTexture = new Texture();
-
-    fbOutputMesh = Mesh::createPlane({1,1});
-
-       emitter = new SimpleEmitter();
 
     camera1 = new Camera();
     camera2 = new Camera();//do testow
@@ -47,7 +46,7 @@ void Widget::initializeGL() {
     camera2->forward = {0.4,-0.2,3.2};
     camera3->forward = {0.1, -1.2,-1.4};
     camera4->forward = {2.8,0.5,1.5};
-     camera5->forward = {-0.5,0.5,-1};
+    camera5->forward = {-0.5,0.5,-1};
 
 
     monkeyMesh = Mesh::loadFromObj(":/monkey.obj");
@@ -62,19 +61,19 @@ void Widget::initializeGL() {
     skybox = new Skybox();
     skybox->loadFromImage("skybox/sky");
 
-    gourardProgram = new GLSLProgram();
-    gourardProgram->compileShaderFromFile(":/vshader.vert", GL_VERTEX_SHADER);
-    gourardProgram->compileShaderFromFile(":/fshader.fsh", GL_FRAGMENT_SHADER);
-    gourardProgram->link();
+    program = new GLSLProgram();
+        program->compileShaderFromFile(":/vshader.vert", GL_VERTEX_SHADER);
+        program->compileShaderFromFile(":/fshader.fsh", GL_FRAGMENT_SHADER);
+    program->link();
 
     skyboxProgram = new GLSLProgram();
-    skyboxProgram->compileShaderFromFile("skybox.vert", GL_VERTEX_SHADER);
-    skyboxProgram->compileShaderFromFile("skybox.frag", GL_FRAGMENT_SHADER);
+        skyboxProgram->compileShaderFromFile("skybox.vert", GL_VERTEX_SHADER);
+        skyboxProgram->compileShaderFromFile("skybox.frag", GL_FRAGMENT_SHADER);
     skyboxProgram->link();
 
     fbProgram = new GLSLProgram();
-    fbProgram->compileShaderFromFile("fb.vert", GL_VERTEX_SHADER);
-    fbProgram->compileShaderFromFile("fb.frag", GL_FRAGMENT_SHADER);
+        fbProgram->compileShaderFromFile("fb.vert", GL_VERTEX_SHADER);
+        fbProgram->compileShaderFromFile("fb.frag", GL_FRAGMENT_SHADER);
     fbProgram->link();
 
     fire = new GLSLProgram();
@@ -82,14 +81,10 @@ void Widget::initializeGL() {
           fire->compileShaderFromFile("fshader.glsl", GL_FRAGMENT_SHADER);
     fire->link();
 
-
-    program =gourardProgram;
-
-
     _qtimer = new QTimer(this);
-                connect(_qtimer, SIGNAL(timeout()), this, SLOT(animate()));
-                connect(_qtimer, SIGNAL(timeout()), this, SLOT(update()));
-       _qtimer->start(200);
+         connect(_qtimer, SIGNAL(timeout()), this, SLOT(animate()));
+         connect(_qtimer, SIGNAL(timeout()), this, SLOT(update()));
+    _qtimer->start(200);
 }
 
 void Widget::animate() {
@@ -106,6 +101,7 @@ void Widget::render(mat4 c) {
 
     glCullFace(GL_FRONT);
     glDepthFunc(GL_LEQUAL);
+
     skyboxProgram->use();
     skyboxProgram->setUniform("ProjMat", projMat);
     skyboxProgram->setUniform("ViewMat", c);
@@ -142,68 +138,69 @@ void Widget::render() {
 void Widget::paintGL() { //tu bedziemy bidnowac framebuffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, (GLint*)&Framebuffer::DefaultFramebuffer); //do czego on zostal zbindowany
+
     Widget::processCamera();
 
 
     //1 dol lewo
     framebuffer1->bind();
-    glViewport(0, 0,width(), height());
-    render(camera1->matrix());
+        glViewport(0, 0,width(), height());
+        render(camera1->matrix());
     framebuffer1->unbind();
     glViewport(0, 0,width()/2, height()/2);
     fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
-    fbProgram->use();
-    fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
-    fbOutputMesh->render();
+        fbProgram->use();
+        fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
+        fbOutputMesh->render();
     fbOutputTexture->unbind(0);
 
 
     framebuffer5->bind();
-    glViewport(0, 0,width(), height());
-    render();
+        glViewport(0, 0,width(), height());
+        render();
     framebuffer5->unbind();
     glViewport(0, 0,width()/5, height()/5);
     fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
-    fbProgram->use();
-    fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
-    fbOutputMesh->render();
+        fbProgram->use();
+        fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
+        fbOutputMesh->render();
     fbOutputTexture->unbind(0);
 
     //2 dol prawo
     framebuffer2->bind();
-    glViewport(0,0, width(), height());
-    render(camera2->matrix());
+        glViewport(0,0, width(), height());
+        render(camera2->matrix());
     framebuffer2->unbind();
     glViewport(width()/2,0, width()/2, height()/2);
     fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
-    fbProgram->use();
-    fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
-    fbOutputMesh->render();
+        fbProgram->use();
+        fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
+        fbOutputMesh->render();
     fbOutputTexture->unbind(0);
 
 
     //3 gora lewo
     framebuffer3->bind();
-    glViewport(0,0, width(), height());
-    render(camera3->matrix());
+        glViewport(0,0, width(), height());
+        render(camera3->matrix());
     framebuffer3->unbind();
     glViewport(0,  height()/2, width()/2, height()/2);
-    fbProgram->use();
-    fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
-    fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
-    fbOutputMesh->render();
+        fbProgram->use();
+        fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
+        fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
+        fbOutputMesh->render();
     fbOutputTexture->unbind(0);
 
     //4 gora prawo
     framebuffer4->bind();
-    glViewport(0,0, width(), height());
-    render(camera4->matrix());
+        glViewport(0,0, width(), height());
+        render(camera4->matrix());
     framebuffer4->unbind();
     glViewport(width()/2, height()/2, width()/2, height()/2);
-    fbProgram->use();
-    fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
-    fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
-    fbOutputMesh->render();
+        fbProgram->use();
+        fbOutputTexture->bind(0);//te 2 rzeczy sa ze soba powiazane, ta tekstura jest widziana jako sampletext
+        fbProgram->setUniform("SamplerTex", 0);//wybieramy teksutre
+        fbOutputMesh->render();
     fbOutputTexture->unbind(0);
 
 
@@ -332,9 +329,7 @@ void Widget::processCamera() {
 }
 
 void Widget::keyPressEvent(QKeyEvent *event) {
-
        keys.insert(event->key());
-
 }
 
 
