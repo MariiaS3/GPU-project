@@ -34,7 +34,7 @@ class Widget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     Mesh  *monkeyMesh;
 
     Skybox *skybox;
-    GLSLProgram *program, *gourardProgram, *skyboxProgram;
+    GLSLProgram *program, *skyboxProgram;
     //musimy to obudowac w program
     GLSLProgram *fbProgram, *fire;
     vec3 lightPosition;
@@ -52,6 +52,7 @@ class Widget : public QOpenGLWidget, protected QOpenGLFunctions_3_3_Core
     void processCamera();
     void render(mat4 c); //do rendera wrzucimy to co bylo w paintglu
     void render();
+
 public slots:
   virtual void animate();
 
