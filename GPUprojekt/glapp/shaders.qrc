@@ -1,7 +1,0 @@
-<RCC>
-    <qresource prefix="/">
-        <file>fshader.fsh</file>
-        <file>vshader.vert</file>
-        <file>monkey.obj</file>
-    </qresource>
-</RCC>
